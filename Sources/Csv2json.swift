@@ -18,7 +18,7 @@ struct Csv2json: ParsableCommand {
     @Flag(name: .shortAndLong)
     var verbose: Bool = false
 
-    @Flag(help: "Drop incomplete lines.")
+    @Flag(name: .shortAndLong, help: "Drop incomplete lines.")
     var clean: Bool = false
 
     mutating func run() throws {
