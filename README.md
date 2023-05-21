@@ -1,7 +1,7 @@
 # csv2json
 Command-line tool to convert csv to json, written in Swift.
 
-## How to use:   
+### How to use:   
 
 ```zsh 
 git clone https://github.com/hadig/csv2json.git
