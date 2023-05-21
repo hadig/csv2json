@@ -12,10 +12,10 @@ struct Csv2json: ParsableCommand {
     @Option(name: .shortAndLong)
     var delimiter: String = ";"
 
-    @Flag(help: "Do not make output pretty.")
+    @Flag(name: .shortAndLong, help: "Do not make output pretty.")
     var minify: Bool = false
 
-    @Flag(name: .shortAndLong)
+    @Flag(name: .shortAndLong, help: "Print output.")
     var verbose: Bool = false
 
     @Flag(name: .shortAndLong, help: "Drop incomplete lines.")
