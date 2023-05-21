@@ -18,6 +18,9 @@ struct Csv2json: ParsableCommand {
     @Flag(name: .shortAndLong)
     var verbose: Bool = false
 
+    @Flag(help: "Drop incomplete lines.")
+    var clean: Bool = false
+
     mutating func run() throws {
         guard let input = try? String(contentsOfFile: inputFile) else {
             throw RuntimeError("Couldn't read from '\(inputFile)'!")
@@ -44,6 +47,7 @@ struct Csv2json: ParsableCommand {
             output.append(minify ? "{" : "  {\n")
             let fragments = line.components(separatedBy: delimiter)
 
+            var dataString = ""
             for (i, data) in dataModel.enumerated() {
                 guard fragments.count == dataModel.count else {
                     if index == 1 {
@@ -53,17 +57,29 @@ struct Csv2json: ParsableCommand {
                     }
                 }
 
+                if clean {
+                    if fragments[i].isEmpty {
+                        if verbose {
+                            print("Line number \(index) dropped: \n \(line)")
+                        }
+                        dataString = ""
+                        break
+                    }
+                }
+
                 if fragments[i].isNumber {
-                    output.append(minify ? "\"\(data)\":\(fragments[i])" : "   \"\(data)\": \(fragments[i])")
+                    dataString.append(minify ? "\"\(data)\":\(fragments[i])" : "   \"\(data)\": \(fragments[i])")
                 } else {
-                    output.append(minify ? "\"\(data)\":\"\(fragments[i])\"" : "   \"\(data)\": \"\(fragments[i])\"")
+                    dataString.append(minify ? "\"\(data)\":\"\(fragments[i])\"" : "   \"\(data)\": \"\(fragments[i])\"")
                 }
 
                 if i != dataModel.endIndex - 1 {
-                    output.append(",")
+                    dataString.append(",")
                 }
-                output.append(minify ? "" : "\n")
+                dataString.append(minify ? "" : "\n")
             }
+
+            output.append(dataString)
 
             output.append(minify ? "}" : "  }")
             if index != lines.endIndex - 2 {
