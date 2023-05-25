@@ -30,8 +30,6 @@ struct Csv2json: ParsableCommand {
             throw RuntimeError("'\(inputFile)' is empty.")
         }
 
-        var output: String = minify ? "[" : "[\n"
-
         // Split into lines
         let lines = input.split(whereSeparator: \.isNewline)
 
@@ -39,15 +37,16 @@ struct Csv2json: ParsableCommand {
             throw RuntimeError("Input should contain more than one line!")
         }
 
+        var output: String = minify ? "[" : "[\n"
 
         // First line is our data model
         let dataModel = lines.first!.components(separatedBy: delimiter)
 
         for (index, line) in lines.dropFirst().enumerated() {
-            output.append(minify ? "{" : "  {\n")
+            var jsonData = ""
+            jsonData.append(minify ? "{" : "  {\n")
             let fragments = line.components(separatedBy: delimiter)
 
-            var dataString = ""
             for (i, data) in dataModel.enumerated() {
                 guard fragments.count == dataModel.count else {
                     if index == 1 {
@@ -62,24 +61,28 @@ struct Csv2json: ParsableCommand {
                         if verbose {
                             print("Line number \(index) dropped: \n \(line)")
                         }
-                        dataString = ""
+                        jsonData = ""
                         break
                     }
                 }
 
                 if fragments[i].isNumber {
-                    dataString.append(minify ? "\"\(data)\":\(fragments[i])" : "   \"\(data)\": \(fragments[i])")
+                    jsonData.append(minify ? "\"\(data)\":\(fragments[i])" : "   \"\(data)\": \(fragments[i])")
                 } else {
-                    dataString.append(minify ? "\"\(data)\":\"\(fragments[i])\"" : "   \"\(data)\": \"\(fragments[i])\"")
+                    jsonData.append(minify ? "\"\(data)\":\"\(fragments[i])\"" : "   \"\(data)\": \"\(fragments[i])\"")
                 }
 
                 if i != dataModel.endIndex - 1 {
-                    dataString.append(",")
+                    jsonData.append(",")
                 }
-                dataString.append(minify ? "" : "\n")
+                jsonData.append(minify ? "" : "\n")
             }
 
-            output.append(dataString)
+            if jsonData.isEmpty {
+                continue
+            }
+
+            output.append(jsonData)
 
             output.append(minify ? "}" : "  }")
             if index != lines.endIndex - 2 {
